@@ -1,0 +1,14 @@
+{
+  "manifest_version": 3,
+  "name": "Smart Cookie Manager",
+  "version": "1.2",
+  "description": "Inspect cookie size, expiry & risk; rank cookies and export reports.",
+  "permissions": ["cookies", "storage", "tabs", "scripting", "activeTab"],
+  "host_permissions": ["<all_urls>"],
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "background": {
+    "service_worker": "background.js"
+  }
+}

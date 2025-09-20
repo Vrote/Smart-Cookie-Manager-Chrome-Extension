@@ -1,0 +1,142 @@
+body {
+  font-family: "Google Sans", Arial, sans-serif;
+  margin: 0;
+  background: #f9fafb;
+  color: #333;
+  width: 450px;
+}
+
+.tabs {
+  display: flex;
+  background: #fff;
+  border-bottom: 1px solid #ddd;
+}
+
+.tab {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  background: #fff;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+
+.tab.active {
+  border-bottom: 3px solid #1a73e8;
+  color: #1a73e8;
+}
+
+.tab:hover {
+  background: #f1f3f4;
+}
+
+.tab-content {
+  display: none;
+  padding: 15px;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+.filters {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.filters input,
+.filters select {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 13px;
+}
+
+.cookie-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.cookie-card {
+  background: #fff;
+  border-radius: 8px;
+  padding: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  cursor: pointer;
+  transition: transform 0.15s ease-in-out;
+}
+
+.cookie-card:hover {
+  transform: scale(1.02);
+}
+
+.cookie-header {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 600;
+  color: #202124;
+}
+
+.cookie-meta {
+  font-size: 13px;
+  color: #555;
+  margin-top: 5px;
+}
+
+.risk-score {
+  font-weight: bold;
+  padding: 3px 7px;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+.risk-low { background: #e6f4ea; color: #137333; }
+.risk-medium { background: #fff8e1; color: #b26a00; }
+.risk-high { background: #fce8e6; color: #c5221f; }
+
+/* Modal */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 999;
+  left: 0; top: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.3);
+}
+
+.modal-content {
+  background: #fff;
+  margin: 10% auto;
+  padding: 20px;
+  width: 80%;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+.close {
+  float: right;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.delete-btn {
+  margin-top: 12px;
+  padding: 8px 12px;
+  background: #d93025;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+
+.delete-btn:hover {
+  background: #b31412;
+}
+

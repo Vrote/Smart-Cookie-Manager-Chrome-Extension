@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Smart Cookie Manager</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <!-- Tab Navigation -->
+  <div class="tabs">
+    <button class="tab active" data-tab="cookies">🍪 Cookies</button>
+    <button class="tab" data-tab="visual">📊 Visualization</button>
+    <button class="tab" data-tab="export">📤 Export</button>
+  </div>
+
+  <!-- Cookies Tab -->
+  <div class="tab-content active" id="cookies">
+    <h2>Cookie Risk Report</h2>
+    <div id="cookie-summary" class="summary"></div>
+
+    <!-- Filters -->
+    <div class="filters">
+      <input type="text" id="search" placeholder="Search by name or domain...">
+      <select id="filter-risk">
+        <option value="all">All Risks</option>
+        <option value="Low">Low</option>
+        <option value="Medium">Medium</option>
+        <option value="High">High</option>
+      </select>
+      <select id="filter-expiry">
+        <option value="all">All Expiry</option>
+        <option value="session">Session Only</option>
+        <option value="soon">Expiring Soon</option>
+        <option value="long">Long-Term</option>
+      </select>
+    </div>
+
+    <div id="cookie-list" class="cookie-list"></div>
+  </div>
+
+  <!-- Visualization Tab -->
+  <div class="tab-content" id="visual">
+    <h2>Risk Distribution</h2>
+    <canvas id="riskChart"></canvas>
+  </div>
+
+  <!-- Export Tab -->
+  <div class="tab-content" id="export">
+    <h2>Export Report</h2>
+    <button id="export-csv">Download CSV</button>
+    <button id="export-pdf">Download PDF</button>
+  </div>
+
+  <!-- Cookie Detail Modal -->
+  <div id="cookie-modal" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h3 id="modal-name"></h3>
+      <p><strong>Domain:</strong> <span id="modal-domain"></span></p>
+      <p><strong>Size:</strong> <span id="modal-size"></span></p>
+      <p><strong>Expiry:</strong> <span id="modal-expiry"></span></p>
+      <p><strong>Risk Score:</strong> <span id="modal-risk"></span></p>
+      <p><strong>Why Risky?</strong> <span id="modal-reason"></span></p>
+      <p><strong>Can Delete?</strong> <span id="modal-delete"></span></p>
+      <button id="delete-cookie" class="delete-btn">🗑️ Delete Cookie</button>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>
