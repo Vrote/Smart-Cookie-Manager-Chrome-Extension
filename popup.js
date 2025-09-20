@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   let cookies = await chrome.cookies.getAll({});
   let filteredCookies = [...cookies];
-  let currentCookie = null; // store the cookie currently in modal
+  let currentCookie = null; // currently selected cookie
 
   // ---------------- Tab switching ----------------
   tabs.forEach(tab => {
@@ -32,16 +32,35 @@ document.addEventListener("DOMContentLoaded", async () => {
         ? new Date(cookie.expirationDate * 1000).toLocaleDateString()
         : "Session";
 
-      let riskLevel = "Low", riskClass = "risk-low", reason = "Cookie size & expiry are within safe limits.";
-      if (size > 100) {
-        riskLevel = "Medium"; riskClass = "risk-medium";
-        reason = "Large cookie size may slow browsing.";
-      }
-      if (!cookie.secure || !cookie.httpOnly) {
+      const isFirstParty = !cookie.domain.startsWith("."); // simple first-party check
+
+      // ---------------- Risk calculation ----------------
+      let reasons = [];
+      if (size > 100) reasons.push("Large size");
+      if (!cookie.secure) reasons.push("Missing secure flag");
+      if (!cookie.httpOnly) reasons.push("Missing HttpOnly flag");
+      if (cookie.expirationDate && (cookie.expirationDate * 1000 - Date.now()) > 365*24*60*60*1000)
+        reasons.push("Expires in more than 1 year");
+      if (!isFirstParty) reasons.push("Third-party cookie → potential tracking");
+
+      // ---------------- Determine risk level ----------------
+      let riskLevel = "Low";
+      let riskClass = "risk-low";
+
+      if (!isFirstParty && (reasons.includes("Missing secure flag") || reasons.includes("Missing HttpOnly flag"))) {
         riskLevel = "High"; riskClass = "risk-high";
-        reason = "Missing secure/httpOnly flags → possible tracking risk.";
+      } else if (!isFirstParty && reasons.length > 0) {
+        riskLevel = "Medium"; riskClass = "risk-medium";
+      } else if (isFirstParty && (reasons.includes("Missing secure flag") || reasons.includes("Missing HttpOnly flag"))) {
+        riskLevel = "High (Essential)"; riskClass = "risk-high";
+        reasons.push("First-party essential cookie → do NOT delete unless you understand the risk");
+      } else if (reasons.length > 0) {
+        riskLevel = "Medium"; riskClass = "risk-medium";
       }
 
+      const reasonText = reasons.length > 0 ? reasons.join("; ") : "Cookie size & expiry are within safe limits.";
+
+      // ---------------- Render cookie card ----------------
       const card = document.createElement("div");
       card.className = "cookie-card";
       card.innerHTML = `
@@ -53,9 +72,11 @@ document.addEventListener("DOMContentLoaded", async () => {
           Size: ${size} bytes • Expiry: ${expiry}
         </div>
       `;
+
       card.addEventListener("click", () =>
-        openModal(cookie, size, expiry, riskLevel, reason)
+        openModal(cookie, size, expiry, riskLevel, reasonText)
       );
+
       list.appendChild(card);
     });
   }
@@ -77,8 +98,15 @@ document.addEventListener("DOMContentLoaded", async () => {
     filteredCookies = cookies.filter(c => {
       const size = c.value.length + c.name.length;
       let risk = "Low";
-      if (size > 100) risk = "Medium";
-      if (!c.secure || !c.httpOnly) risk = "High";
+      const isFirstParty = !c.domain.startsWith(".");
+      let reasons = [];
+      if (size > 100) reasons.push("Large size");
+      if (!c.secure) reasons.push("Missing secure flag");
+      if (!c.httpOnly) reasons.push("Missing HttpOnly flag");
+      if (!isFirstParty && (reasons.includes("Missing secure flag") || reasons.includes("Missing HttpOnly flag"))) risk = "High";
+      else if (!isFirstParty && reasons.length > 0) risk = "Medium";
+      else if (isFirstParty && (reasons.includes("Missing secure flag") || reasons.includes("Missing HttpOnly flag"))) risk = "High (Essential)";
+      else if (reasons.length > 0) risk = "Medium";
       return val === "all" || risk === val;
     });
     renderCookies(filteredCookies);
@@ -89,10 +117,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     const now = Date.now();
     filteredCookies = cookies.filter(c => {
       if (val === "session") return !c.expirationDate;
-      if (val === "soon") return c.expirationDate &&
-        (c.expirationDate * 1000 - now) < 7 * 24 * 60 * 60 * 1000;
-      if (val === "long") return c.expirationDate &&
-        (c.expirationDate * 1000 - now) > 90 * 24 * 60 * 60 * 1000;
+      if (val === "soon") return c.expirationDate && (c.expirationDate * 1000 - now) < 7 * 24 * 60 * 60 * 1000;
+      if (val === "long") return c.expirationDate && (c.expirationDate * 1000 - now) > 90 * 24 * 60 * 60 * 1000;
       return true;
     });
     renderCookies(filteredCookies);
@@ -100,7 +126,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // ---------------- Modal logic ----------------
   function openModal(cookie, size, expiry, risk, reason) {
-    currentCookie = cookie; // save selected cookie
+    currentCookie = cookie;
     document.getElementById("modal-name").textContent = cookie.name;
     document.getElementById("modal-domain").textContent = cookie.domain;
     document.getElementById("modal-size").textContent = size + " bytes";
@@ -108,7 +134,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.getElementById("modal-risk").textContent = risk;
     document.getElementById("modal-reason").textContent = reason;
     document.getElementById("modal-delete").textContent =
-      (risk === "High") ? "Yes, recommended to delete." : "No, safe to keep.";
+      (risk.includes("High")) ? "Yes, recommended to delete." : "No, safe to keep.";
     modal.style.display = "block";
   }
 
@@ -135,4 +161,5 @@ document.addEventListener("DOMContentLoaded", async () => {
       alert("❌ Failed to delete cookie: " + err.message);
     }
   });
+
 });
